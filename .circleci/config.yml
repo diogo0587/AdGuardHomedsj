@@ -1,6 +1,19 @@
 version: 2.1
 
 jobs:
+  setup:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Download AdGuard Home binary
+          command: |
+            curl -L -S -o '/tmp/AdGuardHome_linux_amd64.tar.gz' 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz'
+            tar -C /tmp/ -xzf /tmp/AdGuardHome_linux_amd64.tar.gz
+            mkdir -p ./docker
+            cp -r /tmp/AdGuardHome/* ./docker/
+
   build:
     docker:
       - image: cimg/base:stable
@@ -9,9 +22,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker image for AdGuard Home
-          command: |
-            # Mude o contexto de build para a pasta "docker"
-            docker build -t adguardhome ./docker
+          command: docker build -t adguardhome ./docker
 
   test:
     docker:
@@ -19,10 +30,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run basic tests on AdGuard Home container
+          name: Test AdGuard Home container
           command: |
             echo "Running tests..."
-            # Testar se a imagem foi construída corretamente
             docker run --rm adguardhome --version
 
   deploy:
@@ -34,7 +44,6 @@ jobs:
       - run:
           name: Deploy AdGuard Home container
           command: |
-            # Executar o contêiner com as portas apropriadas
             docker run -d --name adguardhome \
               -p 53:53/tcp \
               -p 53:53/udp \
@@ -43,9 +52,12 @@ jobs:
 
 workflows:
   version: 2
-  build-test-deploy:
+  setup-build-test-deploy:
     jobs:
-      - build
+      - setup
+      - build:
+          requires:
+            - setup
       - test:
           requires:
             - build
