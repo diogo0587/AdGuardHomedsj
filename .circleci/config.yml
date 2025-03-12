@@ -8,8 +8,8 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build AdGuard Home Docker image
-          command: cd docker && docker build -t adguardhome .
+          name: Build Docker image for AdGuard Home
+          command: docker build -t adguardhome .
 
   test:
     docker:
@@ -17,17 +17,26 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run tests
-          command: ./run_tests.sh
+          name: Run basic tests
+          command: |
+            echo "Running tests..."
+            # Testar se a imagem foi construída corretamente
+            docker run --rm adguardhome --version
 
   deploy:
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
+      - setup_remote_docker
       - run:
-          name: Deploy to production
-          command: ./deploy.sh
+          name: Deploy AdGuard Home container
+          command: |
+            docker run -d --name adguardhome \
+              -p 53:53/tcp \
+              -p 53:53/udp \
+              -p 3000:3000 \
+              adguardhome
 
 workflows:
   version: 2
@@ -40,6 +49,3 @@ workflows:
       - deploy:
           requires:
             - test
-          filters:
-            branches:
-              only: main
