@@ -1,0 +1,59 @@
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_IMAGE: "adguardhome:latest"
+
+setup:
+  stage: setup
+  script:
+    - echo "Downloading AdGuard Home binary..."
+    - curl -L -S -o './docker/AdGuardHome_linux_amd64.tar.gz' 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz'
+    - mkdir -p ./docker
+    - tar -C ./docker/ -xzf ./docker/AdGuardHome_linux_amd64.tar.gz
+    - echo "Creating Dockerfile..."
+    - |
+      cat <<EOF > Dockerfile
+      FROM alpine:3.18
+      WORKDIR /opt/adguardhome
+      RUN apk --no-cache add ca-certificates libcap tzdata && \
+          mkdir -p /opt/adguardhome
+      COPY ./docker/AdGuardHome_linux_amd64 /opt/adguardhome/AdGuardHome
+      RUN chmod +x /opt/adguardhome/AdGuardHome
+      EXPOSE 53/tcp 53/udp 3000
+      CMD ["/opt/adguardhome/AdGuardHome"]
+      EOF
+
+build:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $DOCKER_IMAGE .
+
+test:
+  stage: test
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - echo "Testing Docker image..."
+    - docker run --rm $DOCKER_IMAGE --version
+
+deploy:
+  stage: deploy
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - echo "Deploying AdGuard Home container..."
+    - docker run -d --name adguardhome \
+        -p 53:53/tcp \
+        -p 53:53/udp \
+        -p 3000:3000 \
+        $DOCKER_IMAGE
