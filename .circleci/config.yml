@@ -9,10 +9,31 @@ jobs:
       - run:
           name: Download AdGuard Home binary
           command: |
+            echo "Downloading AdGuard Home binary..."
             curl -L -S -o '/tmp/AdGuardHome_linux_amd64.tar.gz' 'https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz'
             tar -C /tmp/ -xzf /tmp/AdGuardHome_linux_amd64.tar.gz
             mkdir -p ./docker
             cp -r /tmp/AdGuardHome/* ./docker/
+      - run:
+          name: Create Dockerfile in project root
+          command: |
+            echo "Creating Dockerfile..."
+            cat <<EOF > Dockerfile
+            FROM alpine:3.18
+
+            WORKDIR /opt/adguardhome
+
+            RUN apk --no-cache add ca-certificates libcap tzdata && \\
+                mkdir -p /opt/adguardhome
+
+            COPY ./docker/AdGuardHome_linux_amd64 /opt/adguardhome/AdGuardHome
+
+            RUN chmod +x /opt/adguardhome/AdGuardHome
+
+            EXPOSE 53/tcp 53/udp 3000
+
+            CMD ["/opt/adguardhome/AdGuardHome"]
+            EOF
 
   build:
     docker:
@@ -22,7 +43,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker image for AdGuard Home
-          command: docker build -t adguardhome ./docker
+          command: docker build -t adguardhome .
 
   test:
     docker:
