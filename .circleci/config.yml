@@ -18,7 +18,7 @@ jobs:
           name: Create Dockerfile in project root
           command: |
             echo "Creating Dockerfile..."
-            cat <<EOF > Dockerfile
+            cat \<<EOF > Dockerfile
             FROM alpine:3.18
 
             WORKDIR /opt/adguardhome
