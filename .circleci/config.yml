@@ -18,22 +18,14 @@ jobs:
           name: Create Dockerfile in project root
           command: |
             echo "Creating Dockerfile..."
-            cat \<<EOF > Dockerfile
-            FROM alpine:3.18
-
-            WORKDIR /opt/adguardhome
-
-            RUN apk --no-cache add ca-certificates libcap tzdata && \\
-                mkdir -p /opt/adguardhome
-
-            COPY ./docker/AdGuardHome_linux_amd64 /opt/adguardhome/AdGuardHome
-
-            RUN chmod +x /opt/adguardhome/AdGuardHome
-
-            EXPOSE 53/tcp 53/udp 3000
-
-            CMD ["/opt/adguardhome/AdGuardHome"]
-            EOF
+            echo 'FROM alpine:3.18' > Dockerfile
+            echo 'WORKDIR /opt/adguardhome' >> Dockerfile
+            echo 'RUN apk --no-cache add ca-certificates libcap tzdata && \\ ' >> Dockerfile
+            echo '    mkdir -p /opt/adguardhome' >> Dockerfile
+            echo 'COPY ./docker/AdGuardHome_linux_amd64 /opt/adguardhome/AdGuardHome' >> Dockerfile
+            echo 'RUN chmod +x /opt/adguardhome/AdGuardHome' >> Dockerfile
+            echo 'EXPOSE 53/tcp 53/udp 3000' >> Dockerfile
+            echo 'CMD ["/opt/adguardhome/AdGuardHome"]' >> Dockerfile
 
   build:
     docker:
