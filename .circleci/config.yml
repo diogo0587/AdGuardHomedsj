@@ -9,7 +9,9 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker image for AdGuard Home
-          command: docker build -t adguardhome .
+          command: |
+            # Mude o contexto de build para a pasta "docker"
+            docker build -t adguardhome ./docker
 
   test:
     docker:
@@ -17,7 +19,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run basic tests
+          name: Run basic tests on AdGuard Home container
           command: |
             echo "Running tests..."
             # Testar se a imagem foi construída corretamente
@@ -32,6 +34,7 @@ jobs:
       - run:
           name: Deploy AdGuard Home container
           command: |
+            # Executar o contêiner com as portas apropriadas
             docker run -d --name adguardhome \
               -p 53:53/tcp \
               -p 53:53/udp \
