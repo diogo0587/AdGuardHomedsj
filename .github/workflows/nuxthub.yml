@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-          cache-dependency-path: './pnpm-lock.yaml'
+        # Removido o parâmetro "cache-dependency-path" para evitar erro de resolução de caminho
 
       - name: Install dependencies
         run: pnpm install
