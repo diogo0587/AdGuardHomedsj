@@ -22,13 +22,7 @@ jobs:
         with:
           version: 9
 
-      # Instalação do Node.js com suporte a cache de dependências
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: ./pnpm-lock.yaml
+  
 
       # Gera o arquivo pnpm-lock.yaml se ele não existir
       - name: Generate pnpm-lock.yaml if missing
@@ -37,6 +31,14 @@ jobs:
             echo "pnpm-lock.yaml not found. Generating..."
             pnpm install --lockfile-only
           fi
+
+        # Instalação do Node.js com suporte a cache de dependências
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: ./pnpm-lock.yaml
 
       # Instala dependências usando pnpm
       - name: Install dependencies
