@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
+          cache-dependency-path: './pnpm-lock.yaml'
 
       - name: Install dependencies
         run: pnpm install
@@ -41,7 +42,7 @@ jobs:
         with:
           project-key: ad-guard-homeds-wzot
 
-      - name: Pull and Run AdGuard Home
+      - name: Run AdGuard Home
         run: |
           docker pull adguard/adguardhome:latest
           docker run -d --rm --name adguardhome \
