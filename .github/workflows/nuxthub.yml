@@ -13,26 +13,26 @@ jobs:
       id-token: write
 
     steps:
-      # Faz o checkout dos arquivos do repositório
+      # 1. Checkout do código
       - uses: actions/checkout@v4
 
-      # Verifica se o package.json existe; se não, cria um arquivo mínimo
+      # 2. Verifica se o package.json existe; se não, cria um arquivo mínimo
       - name: Ensure package.json exists
         run: |
           if [ ! -f package.json ]; then
             echo "package.json not found. Generating a minimal package.json..."
-            echo '{ "name": "adguardhomedsj", "version": "1.0.0", "scripts": { "build": "echo Building...", "start": "echo Starting..." } }' > package.json
+            echo '{ "name": "adguardhomedsj", "version": "1.0.0", "dependencies": {}, "scripts": { "build": "echo Building...", "start": "echo Starting..." } }' > package.json
           else
             echo "package.json found."
           fi
 
-      # Instala o pnpm
+      # 3. Instala o pnpm
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      # Configuração do Node.js com cache utilizando o pnpm-lock.yaml
+      # 4. Configura o Node.js com suporte ao cache utilizando pnpm-lock.yaml
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,32 +40,41 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: './pnpm-lock.yaml'
 
-      # Gera o pnpm-lock.yaml se ele não existir
+      # 5. Gera o pnpm-lock.yaml se ele não existir
       - name: Generate pnpm-lock.yaml if missing
         run: |
           if [ ! -f pnpm-lock.yaml ]; then
             echo "pnpm-lock.yaml not found. Generating..."
-            pnpm install --lockfile-only
+            pnpm install --lockfile-only || true
           else
             echo "pnpm-lock.yaml already exists."
           fi
 
-      # Instala as dependências do projeto
+      # 6. Configura o cache do pnpm manualmente (workaround para problemas de cache)
+      - name: Setup pnpm cache directory
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.get-pnpm-store.outputs.store-path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      # 7. Instala dependências do projeto usando pnpm
       - name: Install dependencies
         run: pnpm install
 
-      # Build da aplicação
+      # 8. Build da aplicação Nuxt.js
       - name: Build application
         run: pnpm build
 
-      # Deploy para o NuxtHub usando a ação específica
+      # 9. Deploy para o NuxtHub usando a ação específica
       - name: Deploy to NuxtHub
         uses: nuxt-hub/action@v1
         id: deploy
         with:
           project-key: ad-guard-homeds-wzot
 
-      # Puxa e executa o container do AdGuard Home via Docker
+      # 10. Puxa e executa o container do AdGuard Home via Docker após o deploy
       - name: Run AdGuard Home
         run: |
           docker pull adguard/adguardhome:latest
