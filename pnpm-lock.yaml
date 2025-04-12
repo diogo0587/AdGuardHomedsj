@@ -1,0 +1,27 @@
+lockfileVersion: 5.4
+
+importers:
+  .:
+    specifiers:
+      nuxt: ^3.0.0
+      vue: ^3.2.0
+    dependencies:
+      nuxt: 3.0.0
+      vue: 3.2.47
+
+packages:
+  /nuxt/3.0.0:
+    resolution:
+      tarball: https://registry.npmjs.org/nuxt/-/nuxt-3.0.0.tgz
+    dependencies:
+      vue: ^3.2.0
+    dev: false
+
+  /vue/3.2.47:
+    resolution:
+      tarball: https://registry.npmjs.org/vue/-/vue-3.2.47.tgz
+    dev: false
+
+metadata:
+  nodeVersion: v22.14.0
+  pnpmVersion: 9.0.0
