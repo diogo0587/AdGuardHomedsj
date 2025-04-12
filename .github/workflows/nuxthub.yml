@@ -32,6 +32,16 @@ jobs:
         with:
           version: 9
 
+          # 5. Gera o pnpm-lock.yaml se ele não existir
+      - name: Generate pnpm-lock.yaml if missing
+        run: |
+          if [ ! -f pnpm-lock.yaml ]; then
+            echo "pnpm-lock.yaml not found. Generating..."
+            pnpm install --lockfile-only || true
+          else
+            echo "pnpm-lock.yaml already exists."
+          fi
+
       # 4. Configura o Node.js com suporte ao cache utilizando pnpm-lock.yaml
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -41,14 +51,14 @@ jobs:
           cache-dependency-path: './pnpm-lock.yaml'
 
       # 5. Gera o pnpm-lock.yaml se ele não existir
-      - name: Generate pnpm-lock.yaml if missing
-        run: |
-          if [ ! -f pnpm-lock.yaml ]; then
-            echo "pnpm-lock.yaml not found. Generating..."
-            pnpm install --lockfile-only || true
-          else
-            echo "pnpm-lock.yaml already exists."
-          fi
+      #- name: Generate pnpm-lock.yaml if missing
+       # run: |
+       #   if [ ! -f pnpm-lock.yaml ]; then
+       #     echo "pnpm-lock.yaml not found. Generating..."
+        #    pnpm install --lockfile-only || true
+       #   else
+      #      echo "pnpm-lock.yaml already exists."
+        #  fi
 
       # 6. Configura o cache do pnpm manualmente (workaround para problemas de cache)
       - name: Setup pnpm cache directory
